@@ -3,60 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Système d'Alerte</title>
+    <title>Sytème d'Alerte Dynamique</title>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; font-family: sans-serif; background: #111; color: white; }
-        #accueil { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; text-align: center; }
-        iframe { width: 100%; height: 100vh; border: none; display: none; }
+        /* Style pour masquer tout et afficher l'iframe proprement */
+        body, html { 
+            margin: 0; 
+            padding: 0; 
+            height: 100%; 
+            width: 100%;
+            overflow: hidden; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #000;
+            color: white;
+        }
+
+        #accueil { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+            text-align: center;
+        }
+
+        iframe { 
+            display: none; /* Caché par défaut */
+            width: 100%; 
+            height: 100vh; 
+            border: none; 
+            margin: 0;
+            padding: 0;
+        }
     </style>
 </head>
 <body>
 
     <div id="accueil">
-        <h1>Initialisation...</h1>
-        <p>En attente du paramètre de session.</p>
+        <h1>Initialisation du système...</h1>
+        <p>Veuillez patienter pendant la vérification des paramètres.</p>
     </div>
 
     <iframe id="iframe-page" src="https://giannioff.github.io/loading/"></iframe>
 
     <script type="text/javascript">
-        // --- TES INFOS À VÉRIFIER ---
-        const SERVICE_ID = "service_yxxgo0k";  // EX: service_xxxxxxx
-        const TEMPLATE_ID = "template_umtwpsi"; // EX: template_xxxxxxx
-        const PUBLIC_KEY = "q9483jeQ2w7hlwQuJ";
+        // ==========================================
+        // CONFIGURATION - REMPLACE LES VALEURS ICI
+        // ==========================================
+        const PUBLIC_KEY = "q9483jeQ2w7hlwQuJ"; 
+        const SERVICE_ID = "TON_SERVICE_ID";  // Exemple: service_xxxx
+        const TEMPLATE_ID = "TON_TEMPLATE_ID"; // Exemple: template_xxxx
+        // ==========================================
 
+        // Initialisation d'EmailJS
         (function() {
             emailjs.init(PUBLIC_KEY);
         })();
 
-        function executerAction() {
+        function verifierEtEnvoyer() {
             const hash = window.location.hash;
 
+            // On vérifie si l'URL contient un hash (ex: #JIZU9ZOEJ)
             if (hash && hash.length > 1) {
-                // 1. Afficher l'iframe de loading immédiatement
+                console.log("Paramètre détecté : " + hash);
+
+                // 1. Mise à jour de l'affichage (Iframe plein écran)
                 document.getElementById('accueil').style.display = "none";
                 document.getElementById('iframe-page').style.display = "block";
 
-                // 2. Envoyer l'email en arrière-plan
-                console.log("Envoi du signal pour : " + hash);
-                
-                emailjs.send(SERVICE_ID, TEMPLATE_ID, {
+                // 2. Envoi de l'email via EmailJS
+                // Les clés "message" et "to_name" DOIVENT être dans ton template {{message}}
+                const variablesTemplate = {
                     message: "Code utilisé : " + hash,
-                    to_name: "Admin"
-                })
-                .then(() => {
-                    console.log("Email envoyé avec succès !");
-                })
-                .catch((error) => {
-                    console.error("Erreur EmailJS détaillée :", error);
-                    // Si tu vois 404 ici, c'est que SERVICE_ID ou TEMPLATE_ID est faux
-                });
+                    to_name: "Administrateur"
+                };
+
+                emailjs.send(SERVICE_ID, TEMPLATE_ID, variablesTemplate)
+                    .then(function(response) {
+                        console.log("SUCCÈS ! Email envoyé.", response.status, response.text);
+                    }, function(error) {
+                        console.error("ERREUR lors de l'envoi :", error);
+                    });
             }
         }
 
-        window.onload = executerAction;
-        window.onhashchange = executerAction;
+        // Exécution au chargement de la page
+        window.onload = verifierEtEnvoyer;
+
+        // Exécution si l'utilisateur change le hash sans recharger la page
+        window.onhashchange = verifierEtEnvoyer;
     </script>
 </body>
 </html>
